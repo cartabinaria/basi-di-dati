@@ -1,0 +1,750 @@
+
+    TE 10-09-04
+
+
+Sono date le relazioni seguenti (le chiavi primarie sono sottolineate):
+    MECCANICO(-MatrM, NomeM)
+    SA-RIPARARE(-MatrM, -TipoGuasto)
+    EFFETTUA-RIPARAZIONE(-CodR, MatrM, Targa, Data, Durata, TipoGuasto)
+
+Esprimere le seguenti interrogazioni
+(a) (5+4 punti) in linguaggio SQL ed in algebra: Trovare il nome dei meccanici che hanno
+effettuato almeno una riparazione di un guasto che non sapevano riparare.
+(b) (5 punti) in linguaggio SQL: per le autovetture per cui sono state necessarie riparazioni effet-
+tuate da almeno 3 meccanici diversi nello stesso giorno, visualizzare la targa dell’autovettura,
+la data delle riparazioni e i tipi di guasto che si sono verificati, ordinando il risultato in
+ordine crescente di targa e decrescente di data.
+
+a)
+    SELECT MatrM, Nome
+    FROM meccanino M NATURAL JOIN effettua-riparazione ER 
+    WHERE ER.TipoGuasto NOT IN (SELECT TipoGuasto FROM sa-riparare WHERE sa-riparare.MatrM=MatrM )
+
+    Altrimenti
+
+    SELECT DISTINCT Nome
+    FROM meccanino M NATURAL JOIN effettua-riparazione ER RIGHT JOIN sa-riparare SR   
+    WHERE ER.TipoGuasto=NULL
+
+b)
+    SELECT targa, ?TipoGuasto?, data
+    FROM effettua-riparazione ER
+    WHERE targa IN 
+    (SELECT Targa
+    FROM effettua-riparazione ER
+    GROUP BY  Data, targa
+    HAVING COUNT(DISTINCT MatrM) > 3)
+    ORDER BY targa ASC
+    ORDER BY date DESC
+
+=============================================================================================================
+
+    TE 2014_07_17
+ 
+Sono date le relazioni seguenti (le chiavi primarie sono sottolineate):
+
+TURISTA(-CodFiscT, Nome, DataNascita, CartaCredito, Nazione)
+VILLAGGIO TURISTICO(-CodVT, -NomeSocietà, Nome, Città, #Stelle)
+SERVIZI DISPONIBILI(-CodVT, -NomeSocietà, -NomeServizio)
+PRENOTAZIONE SOGGIORNO(-CodFiscT, -DataInizioSoggiorno, CodVT, NomeSocietà,
+DataFineSoggiorno, Importo, #Adulti, #Bambini, Acconto)
+
+Esercizio obbligatorio in algebra relazionale (4 punti):
+Visualizzare il codice e il nome dei turisti che hanno prenotato solo soggiorni in villaggi
+turistici che dispongono di wi-fi gratuito (NomeServizio=’wifi gratuito’).
+
+PRO[Nome](
+    PRO[CodFiscT](PRO[CodVT, NomeSocieta'](VILLAGIO JOIN SEL[NomeServizio="Wifi_gratuito"]SERVIZI) JOIN PRENOTAZIONE) JOIN TURISTA 
+    -
+    PRO[CodFiscT](PRO[CodVT, NomeSocieta'](VILLAGIO JOIN SEL[NomeServizio!="Wifi_gratuito"]SERVIZI) JOIN PRENOTAZIONE) JOIN TURISTA 
+)
+
+(b) Esercizio obbligatorio in linguaggio SQL (5 punti):
+Per ciascun turista nato dopo il 1980 che ha effettuato almeno 3 prenotazioni nello stesso
+villaggio turistico, visualizzare il nome e la nazione del turista, il numero complessivo di
+prenotazioni effettuale, il numero totale di adulti per cui sono state effettuate le prenotazioni
+e il corrispondente importo complessivo.
+
+
+SELECT T.Nome, TNazione, Count(*) AS NumeroPrenotazioni, SUM(P.Adulti) AS NumeroAdulti, SUM(P.Importo) AS SpesaComplessiva
+FROM TURISTA T JOIN PRENOTAZIONI P
+WHERE T.CodFiscT IN (SELECT CodFiscT
+                     FROM TURISTA T JOI PRENOTAZIONI P
+                     GROUP BY CodFiscT, DataInizioSoggiorno, CodVt, NomeSocieta'
+                     HAVING COUNT(*) > 3
+                    )
+AND T.DataNascita > 1980
+GROUP BY T.Nome, T.Nazione, T.CodFiscT
+
+
+(c) Esercizio opzionale in linguaggio SQL (5 punti):
+Visualizzare il codice del villaggio turistico e il nome della società di afferenza per ciascun
+villaggio turistico 4 stelle che non ha mai ricevuto una prenotazione con un acconto pari
+all’importo, e per cui il numero complessivo di prenotazioni ricevute da turisti di nazionalità
+italiana sia superiore al numero complessivo di prenotazioni ricevute da turisti di nazionalità
+tedesca.
+
+FROM VILLAGGIO V JOIN 
+(SELECT V1.CodVt, V1.NomeSocieta', V1.COUNT(*) AS NumeroIT FROM VILLAGGIO V1 JOIN TURISTA  WHERE T.Nazione = "Italia") JOIN
+(SELECT V1.CodVt, V1.NomeSocieta', V1.COUNT(*) AS NumeroGE FROM VILLAGGIO V1 JOIN TURISTA WHERE T.Nazione = "Germania" )
+WHERE V.Stelle=4 AND NOT EXISTS(
+        SELECT *
+        FROM PRENOTAZION
+        WHERE P.CodVt = V.CodVt AND P.NomeSocieta' = V.NomeSocieta'
+        V.Importo = V.Acconto 
+)
+    AND NumeroIT > NumeroGE
+
+
+=============================================================================================================
+
+ TE 2015_07_17
+
+Sono date le seguenti relazioni (le chiavi primarie sono sottolineate):
+
+STUDENTE(-MatrS, NomeS, AnnoLaurea, TitoloStudio, VotoLaurea)
+DIPARTIMENTO(-CodD, NomeD, Settore-Scientifico, NumDocenti)
+CONCORSO DOTTORATO(-CodC, -CodD, DataPubblicazione, DataScadenza, NumPostiDisponibili)
+STUDENTE PARTECIPA CONCORSO DOTTORATO(-CodC, -CodD, -MatrS, DataInvioDomanda)
+
+(a) Esercizio obbligatorio in algebra relazionale (4 punti): :
+Visualizzare la matricola e il nome degli studenti che hanno conseguito un voto di laurea
+superiore a 105 ed hanno partecipato ad almeno due concorsi di dottorato con la stessa
+data di pubblicazione.
+
+    PRO[MatrS, NomeS]SEL[CodC!=CodC1 OR CodD != CodD1](SEL[VotoLaurea > 105]STUDENTE JOIN RID[(CodC1, CodC), (CodD1, CodD)]SPCD JOIN SPCD)
+
+(b) E sercizio obbligatorio in linguaggio SQL (5 punti):
+Per i dipartimenti in cui sono stati effettuati solo concorsi di dottorato aventi ciascuno un
+numero di posti disponibili superiore a 7, visualizzare il nome del dipartimento, il setto-
+re scientifico di afferenza e il numero di concorsi di dottorato con data di pubblicazione
+successiva a Marzo 2014.
+
+SELECT D.NomeD, D.Settore-Scientifico, COUNT(*)
+FROM DIPARTIMENTO D JOIN 'CONCORSO DOTTORATO' CD
+WHERE NOT EXISTS(SELECT * FROM 'CONCORSO DOTTORATO' CD WHERE CD.CodD = D.CodD AND CD.NumPostiDisponibili < 7)
+AND DataPubblicazione > 'Marzo 2014'
+GROUP BY D.CodD, D.NomeD, D.Settore-Scientifico, CD.CodC
+
+(c) E sercizio opzionale in linguaggio SQL (6 punti):
+Per ciascuno studente che ha partecipato a concorsi di dottorato per almeno 3 settori scien-
+tifici diversi, visualizzare il nome dello studente e il settore scientifico per cui ha partecipato
+a tutti i concorsi.
+
+SELECT S.Nome
+FROM STUDENTE S JOIN SP 
+WHERE EXISTS (SELECT * FROM 'STUDENTE PARTECIPA' SP JOIN DIPARTIMENTO D WHERE S.MatrS = SP.MatrS G
+              GROUP BY D.Settore-Scientifico
+              HAVING COUNT(*) > 3)
+
+=============================================================================================================
+
+    TE 03-07-2014
+
+1. Sono date le relazioni seguenti (le chiavi primarie sono sottolineate):
+INGEGNERE(-CodI, NomeI, Indirizzo, PartitaIVA, Città)
+AZIENDA(-CodA, NomeA, TipologiaAzienda, Città, SitoWeb)
+SETTORE(-CodS, NomeSettore, Descrizione)
+CONSULENZE EFFETTUATE(-CodI, -CodA, -Data, CodS, Importo)
+
+
+TipologiaAzienda = {microimpresa, piccolaimpresa, mediaimpresa, grandeimpresa}
+Esprimere le seguenti interrogazioni
+(a) Esercizio obbligatorio in algebra relazionale (4 punti):
+Visualizzare il codice e il nome di ciascun ingegnere che ha effettuato consulenze presso
+almeno due aziende di tipologia media impresa.
+
+    AZIENDAM := PRO[CodA](SEL[TipologiaAzienda=mediaimpresa])
+    CONSULENZAM := PRO[CodI, CodA]AZIENDAM JOIN CONSULENZA
+
+    SEL[CodA != CodA1] (CONSULENZAM JOIN RID[(CodA1, CodA)]CONSULENZAM) JOIN INGEGNERE
+
+(b) Esercizio obbligatorio in linguaggio SQL (5 punti):
+Per ciascun ingegnere di Torino che non ha mai effettuato consulenze nel settore ”Edilizia”,
+visualizzare il nome dell’ingegnere e il numero complessivo di consulenze effettuate.
+    
+    SELECT I.CodI, COUNT(*)
+    FROM INGEGNERE I JOIN CONSULENZE EFFETTUATE CE
+    WHERE NOT EXISTS(SELECT * FROM CONSULENZE EFFETTUATE CE1 JOIN SETTORE S WHERE CE1.CodI=I.CodI AND S.NomeSettore="Edilizia")
+    GROUP BY I.CodI 
+
+(c) Esercizio opzionale in linguaggio SQL (5 punti):
+Per ciascuna azienda, visualizzare il nome dell’azienda e il nome dell’ingegnere che ha
+effettuato il maggior numero di consulenze presso quell’azienda nell’anno 2013.
+
+SELECT CONTCONS.CodI, CONTCONS.CodA CONTCONS.NumeroConsulenze
+FROM AZIENDA A, INGENERE I JOIN (
+    SELECT I.CodI, A.CodA, COUNT(*) AS NumeroConsulenze
+    FROM AZIENDA A JOIN CONSULENZE EFFETTUATE CE JOIN INGENERE I2
+    WHERE CE.DATA BETWEEN 2013 AND 2014
+    GROUP BY I2.CodI, A.CodA) AS CONTCONS
+WHERE I.CodI IN(
+    SELECT CONTCONS.CodI
+    FROM CONTCONS
+    WHERE CONTCONS.CodA = A.CodA
+=============================================================================================================
+
+    TE 10-11-03
+
+1. Sono date le relazioni seguenti (le chiavi primarie sono sottolineate):
+CONCERTO(-CodC, NomeOrchestra, Durata)
+PROGRAMMA(-Data, -OraInizio, -Sala, CodC)
+BIGLIETTO-VENDUTO(-NumPosto, -Data, -OraInizio, -Sala, TipoPosto, Prezzo)
+Esprimere le seguenti interrogazioni
+(a) (5+4 punti) in linguaggio SQL ed in algebra: trovare il codice dei concerti tenuti almeno
+due volte nella stessa sala e che non sono mai stati tenuti prima delle 20.
+
+    CONC20 := CONCERTO - PRO[CodC][SEL[OraInizio < 20]PROGRAMMA
+    SEL[Data1 != Data OR OraInizio1 != OraInizio AND Sala1 == Sala AND](
+    (CONC20 JOIN RID[(Sala1, Sala), (Data1, Data), (OraInizio1, OraInizio)]PROGRAMMA) JOIN CONC20
+    )
+
+    FROM CONCERTO C JOIN PROGRAMMA P
+    WHERE NOT EXISTS( SELECT * FROM PROGRAMMA P1 WHERE P1.CodC == C.Codc AND P1.OraInizio < 20)
+    GROUP BY C.CodC, P.Sala
+    HAVING COUNT(*) > 2
+
+(b) (5 punti) in linguaggio SQL: per gli spettacoli rappresentati in almeno cinque sale diverse,
+trovare codice del concerto e numero totale di biglietti venduti con un prezzo superiore al
+prezzo medio del biglietto per quel concerto.
+
+    SELECT C.CodC, COUNT(*) AS OVERPRICED
+    FROM CONCERTO C JOIN (
+        SELECT C.CodC, AVG(BV.Prezzo) AS Media
+        FROM CONCERTO C JOIN PROGRAMMA P JOIN BIGLIETTO-VENDUTO BV
+        WHERE C.CodC IN 
+                    (SELECT C.codC FROM CONCERTO C JOIN PROGRAMMA P
+                     GROUP BY C.CodC
+                     HAVING COUNT(DISTINCT P.SalaC) > 5)
+        GROUP BY C.CodC)
+    AS M JOIN BIGLIETTI-VENDUTI BV JOIN PROGRAMMA P
+    WHERE BV.Prezzo > M.Media
+    GROUP BY C.CodC
+
+
+=============================================================================================================
+
+    TE 12-11-04
+
+1. Sono date le relazioni seguenti (le chiavi primarie sono sottolineate):
+UTENTE(-NumTel, NomeU, Città)
+CHIAMATA(-NumTelChiamante, -NumTelChiamato, -Data, -Ora, Durata)
+Esprimere le seguenti interrogazioni
+(a) (5+4 punti) in linguaggio SQL ed in algebra: trovare il numero di telefono degli utenti che
+hanno chiamato solo utenti della stessa città.
+
+    R1 := [NumTelChiamante](RID[(NumTelChiamante, NumTel)]UTENTE JOIN CHIAMATA JOIN RID[(NumTelChiamato, NumTel), (Citta1, Citta)] UTENTE )
+    PRO[NumTel]UTENTE - RID[(NumTel, NumTelChiamante)]PRO[NumTelChiamante](SEL[Citta!=Citta1]R1)
+
+    SELECT U.NumTel
+    FROM UTENTE U JOIN CHIAMATA C ON U.NumTel=C.NumTelChiamante JOIN UTENTE U2 ON U2.NumTel=C2.NumTelChiamato
+    WHERE U.Citta=U.Citta1
+    GROUP BY NumTelChiamante
+    HAVING COUNT(DISTINCT U2.Citta) = 1
+
+
+(b) (5 punti) in linguaggio SQL: per le città con più di 10.000 utenti, visualizzare numero di
+telefono e nome degli utenti della città, numero totale di telefonate effettuate da tali utenti
+nel giorno 11/11/04 e loro durata complessiva.
+
+    SELECT U.NumTel, U.NomeU, COUNT(C.Durata) AS DURATA_TOTALE, COUNT(*) AS NUMERO_CHIAMATE
+    FROM UTENTE U JOIN CHIAMATA C ON U.NumTel=C.NumTelChiamante
+    WHERE U.Citta IN (SELECT U.Citta
+                      FROM UTENTE U
+                      GROUP BY U.Citta
+                      HAVING COUNT(*) > 10.000   
+                    )
+    AND C.Data="11/11/04"
+    GROUP BY C.NumTelChiamante
+
+=============================================================================================
+    TE 16-09-05
+
+1. Sono date le relazioni seguenti (le chiavi primarie sono sottolineate):
+DIPENDENTE(-Matr, Nome, Mansione, CodD)
+DIPARTIMENTO(-CodD, NomeD)
+FERIE(-Matr, -DataInizio, DurataInGiorni)
+Esprimere le seguenti interrogazioni
+(a) (4 punti) in algebra relazionale: visualizzare il nome dei dipendenti che hanno effettuato
+solo periodi di ferie con durata maggiore di 10 giorni.
+
+    PRO[Nome]((PRO[MATR]DIPENDENTE - PRO[Matr]DIPENDENTE JOIN SEL[DurataInGiorni > 10]FERIE) JOIN DIPENDENTE)
+
+(b) (5 punti) in linguaggio SQL: visualizzare matricola e nome per i dipendenti che hanno
+effettuato un solo periodo singolo di ferie con durata maggiore della durata media dei
+periodi singoli di ferie dei dipendenti dello stesso dipartimento con la stessa mansione.
+
+    SELECT D.Matr, D,Nome
+    FROM DIPENDENTE D JOIN (SELECT D.CodD, DI.Mansione, AVG(F.DurataInGiorni) AS Media
+                            FROM DIPARTIMENTO D JOIN DIPENDENTE DI JOIN FERIE F
+                            GROUP BY D.CodD, DI.Mansione)
+        AS MEDIA JOIN FERIE F
+    WHERE D.Matr IN (SELECT F.Matr
+                    FROM FERIE F
+                    GROUP BY F.Matr
+                    HAVING COUNT(*) = 1)
+    AND F.DurataInGiorni > MEDIA.Media
+
+(c) (5 punti) in linguaggio SQL: visualizzare il codice dei dipartimenti che non hanno nessun
+dipendente che ha effettuato complessivamente più di 21 giorni di ferie.
+
+    SELECT D.CodD
+    FROM DIPARTIMENTO D 
+    WHERE D.CodD NOT IN (SELECT  DI.CodD
+                         FROM FERIE F JOIN DIPENDENTE D JOIN DIPARTIMENTO DI
+                         GROUP BY F.Matr 
+                         HAVING COUNT(F.DurataInGiorni) > 21)
+===========================================================================================
+
+ESERCIZI MILANO
+
+
+VOLO (-NUMERO, -DATA, ORA, AEROPORTOPARTENZA, AEROPORTODESTINAZIONE, CAPIENZA,
+TIPOAEROMOBILE)
+BIGLIETTO (-NUMEROPOSTO, -NUMEROVOLO, -DATA, CFCLIENTE, PREZZO)
+CLIENTE (-CF, NOME, COGNOME, INDIRIZZO, CITTÀ, NAZIONE)
+
+
+SELECT YEAR(DATA), MAX(COUNT(B.Prezzo)) AS MAGGIOR_RICAVO, Data, NumeroVolo
+FROM BIGLIETTO B
+GROUP BY YEAR(DATA), NUMEROVOLO, DATA
+
+
+SELECT 
+FROM CLIENTE C
+WHERE 1 >= ALL(SELECT Count(*)
+             FROM BIGLIETTO B JOIN VOLO ON V.NUMERO=B.NUMEROVOLO AND DATA=DATA
+             WHERE C.CFi=B.CFCLIENTE 
+             GROUP BY C.CF)
+
+Trovare il codice fiscale, il cognome e nome dei clienti che nel 2019 hanno acquistato almeno due biglietti,
+ma mai per lo stesso aeroporto di destinazione (4 p.)i
+
+SELECT C.NOME, C.COGNOME
+FROM BIGLIETTO B JOIN CLIENTE C ON C.CF=C.CFCLIENTE
+WHERE B.DATA BETWEEN "2019-01-01" AND "2019-12-31"
+GROUP BY C.CF, C.COGNOME, C.NOME
+HAVING COUNT(DISTINCT AEREOPORTODESTIMNZIONE) > 2
+HAVING 
+
+Trovare il codice fiscale dei clienti che hanno volato con tutti i tipi di aeromobile (3 p.).
+
+
+================================================================================================================
+ MILANO 2
+
+Lo schema sottostante registra le chiamate di soccorso sanitario in Lombardia, gli invii dei mezzi in
+risposta a tali chiamate e gli eventuali trasporti che i mezzi inviati effettuano verso gli ospedali.
+Gli attributi marcati con * possono avere valore nullo. CODICEGRAVITÀ può avere i valori “Verde”,
+“Giallo” e “Rosso”. MEDICOABORDO è un flag booleano.
+PAZIENTE ( -IDPAZIENTE, COGNOME, NOME, DATANASCITA*, SESSO* )
+AMBULANZA ( -TARGA, NUMEROSOCCORRITORI, MEDICO ABORDO, TELEFONO )
+CHIAMATA ( -IDCHIAMATA, DATA, ORA , CITTÀ, INDIRIZZO, CIVICO, DETTAGLI* )
+MEZZI_INVIATI ( -IDCHIAMATA, -AMBULANZA , CODICEGRAVITÀ )
+TRASPORTATI ( -IDCHIAMATA, -IDPAZIENTE, AMBULANZA , OSPEDALE, REPARTO* )
+
+
+Per ogni città, trovare la data in cui è stato effettuato il maggior numero di chiamate di soccorso (3 p.)
+
+    SELECT Citta, Data
+    FROM CHIAMATA C
+    GROUP BY Citta, Data
+    HAVING COUNT(*) >= (SELECT COUNT(*) FROM CHIAMATA C2 WHERE C1.Citta=C.Citta, GROUP BY DATA)
+
+Estrarre le chiamate alle quali è stata inviata più di un’ambulanza ma si sono concluse senza
+trasporti in ospedale (3 p.)
+
+    SELECT IDCHIAMATA
+    FROM CHIAMATA C JOIN MEZZI_INVIATI
+    WHERE NOT EXIST (SELECT * FROM TRASPORTATI T WHERE T.IDCHIAMATA=C.IDCHIAMATA)
+    GROUP BY C.IDCHIAMATA
+    HAVING COUNT(AMBULANZA) > 2
+
+
+Trovare il cognome e il nome dei pazienti che sono stati trasportati in ospedale una sola volta
+nell’anno 2019, e quell’unica volta l’ambulanza non aveva il medico a bordo (4 p.).
+
+    SELECT T.IDPAZIENTE, A
+    FROM TRASPORTATI T JOIN CHIAMATA C JOIN AMBULANZA A
+    WHERE YEAR(C.CHIAMATA)=2019
+    GROUP BY  T.IDPAZIENTE
+    HAVING COUNT(*) = 1
+
+In algebra: Estrarre le chiamate alle quali è stata inviata più di un’ambulanza ma si sono concluse senza
+trasporti in ospedale (3 p.)
+
+
+   PIUMEZZI := PRO[IDCHIAMATA](SEL[AMBULANZA1!=AMBULANZA]MEZZI_INVIATI JOIN CHIAMATA JOIN RID[(AMBULANZA1, AMBULANZA)]MEZZI_INVIATI)
+
+   PIUMEZZI -  PRO[IDCHIAMATA]TRASPORTATI
+============================================================================================================
+    MILANO 3
+
+CLIENTE (-CODICECLIENTE, COGNOME, NOME, DATANASCITA)
+APPARTAMENTO (-COD_A PPARTAMENTO, VIA, C ITTÀ, CIVICO, L OCALI, METRATURA, PIANO)
+PALAZZO (-VIA, -CITTÀ, -CIVICO, NUM_PIANI , AMMINISTRATORE, DATAA GIBILITÀ)
+AFFITTO (-COD_APPARTAMENTO , -DATAINIZIO, CODICECLIENTE, DATAF INE, PREZZO)
+
+
+Trovare la metratura media degli appartamenti di ogni città agibili dal 1° gennaio 2018 (3 p.).
+
+
+    SELECT CITTA, AVG(A.METRATURA) AS MEDIA
+    FROM APPARTAMENOT A JOIN PALAZZO 
+    WHERE DATA_AGIBILITA > "2018/01/01"
+    GROUP BY CITTA
+
+
+
+Trovare nome e cognome dei clienti che non hanno mai affittato due appartamenti diversi nella
+stessa città (3 p.).
+
+    SELECT CODICE_CLIENTE, COGNOME, NOME
+    FROM AFFITTO JOIN APPARTAMENTO A JOIN CLIENTE
+    GROUP BY CODICE_CLIENTE, COGNOME, NOME
+    HAVING COUNT(DISTINCT COD_APPARTAMENTO) < 2
+
+
+Per ogni palazzo trovare cognome e nome del cliente che ha speso di più in affitti (per quel
+palazzo) terminati nell’anno 2019 (4p.)
+
+    SELECT CODICECLIENTE
+    FROM AFFITTO A JOIN CLIENTE C JOIN APPARTAMENTO AP
+    WHERE YEAR(DATAFINE) = "2019"
+    GROUP BY VIA, CITTA, CIVICO, CODICECLIENTE
+    HAVING SUM(PREZZO) >= ALL (SELECT SUM(PREZZO) FROM AFFITTO A1 JOIN APPARTAMENTO AP1 WHERE AP1.CITTA=AP.CITTA AND AP.VIA=AP.VIA AND AP.CIVICO=AP1.CIVICO GROUP BY A1.CODCLIENTE)
+
+Trovare nome e cognome dei clienti che non hanno mai affittato due appartamenti diversi nella
+stessa città (3 p.).
+
+    
+    DUEDIVERSI := SEL[CITTA=CITTA1, CODAPPARTAMENTO!=CODAPPARTAMENTOO1]PRO[CITTA, CODICECLIENTE, CODAPPARTAMENTO](AFFITTO JOIN APPARTAMENTO) JOIN 
+                  RID[(CITTA1, CITTA) (CODAPPARTAMENTO1, CODAPPARTAMENTO)]PRO[CITTA, CODICECLIENTE, CODAPP](AFFITTO JOIN APPARTAMENTO)
+
+
+    PRO[CODICECLIENTE]CLIENTE - PRO[CODICECLIENTE]SEL[DUEDIVERSI]
+=================================================================================================
+
+    ESAME DB 2016-04-14 (Montesi)
+
+Scrivere in algebra relazionale l’espressione algebrica che restituisce la
+famiglia (o le famiglie, con tutti gli attributi) con il numero minore di
+millesimi.
+    
+   FAMIGLIA - PRO[VIA, NUMERO, FAMIGLIA, MILLESIMI](SEL[MILLESIMI > MILLESIMI1]FAMIGLIA JOIN RID[(VIA1, VIA), (NUMERO1, NUMERO), (MILLESIMI1, MILLESIMI), (FAMIGLIA, FAMIGLIA1)]FAMIGLIA)
+
+
+Scrivere in algebra relazionale l’espressione algebrica che restituisce le fa-
+miglie che non hanno spese personali di tipo “luce”. (hint: significa che o non hanno una entry con tipo “luce”, o il loro consumo è 0).
+
+
+    FLUCE := PRO[VIA, NUMERO, INTERNO]SEL[TIPOBOLLETA="LUCE" AND CONSUMO > 0]SPESE
+
+    PRO[VIA, NUMERO, INTERNO]FAMIGLIA - FLUCE
+
+
+Scrivere in SQL (SQL-3) una query che associ ad ogni famiglia (Via, Nu-
+mero ed Interno) le spese personali complessive (hint: per ogni bolletta il
+costo è uguale a Consumo×Tariffa. Attenzione ai possibili valori nulli).
+
+    SELECT F.FAMIGLIA, SUM(COALESCE(CONSUMO*TARIFFA, 0))
+    FROM FAMIGLIA F LEFT OUTER JOIN SPESE_PERSONALI SP
+    GROUP BY F.VIA, F.INTERNO, F.NUMERO
+
+Scrivere in SQL (SQL-3) una query che calcoli la somma dei millesimi
+associati ad ogni numero di scala con almeno una famiglia.
+
+    SELECT S.SCALA, SUM(F.MILLESIMI) AS MILLESIMI PER SCALA
+    FROM SCALA S JOIN FAMIGLIA F
+    GROUP BY SCALA, VIA, NUMERO, INTERNO
+    HAVING COUNT(*) >= 1
+
+
+==========================================================================
+
+    TE 2014-01-23
+
+CORSA CAMPESTRE(-CodCorsa, NomeCorsa, Categoria, Città, Regione, Data, CodOrganizzatore)
+ORGANIZZATORE(-CodOrganizzatore, NomeO)
+CONCORRENTE(-CodConcorrente, NomeC, DataNascita, Indirizzo, Città, Regione)
+CONCORRENTE PARTECIPA CORSA CAMPESTRE(-CodConcorrente, -CodCorsa, Posizione)
+
+Esprimere le seguenti interrogazioni
+(a) Esercizio obbligatorio in algebra (4 punti):
+Visualizzare il codice e il nome delle persone che hanno organizzato almeno due corse
+campestri per la stessa categoria in città diverse.
+    
+    CONCORRENTE JOIN
+    PRO[CodOrganizzatore]SEL[CodCorsa1!=CodCorsa1 AND Citta1!=Citta1 AND Categoria1 = Categoria] (
+    ORGANIZZATORE JOIN P PRO[CodCorsa, Categoria, Citta, CodOrganizzatore]CORSA_CAMPESTRE JOIN
+    RID[(CodCorsa1, CodCorsa), (Categoria1, Categoria), (Citta1, Citta)]PRO[CodCorsa, Categoria, Citta, CodOrganizzatore]CORSA_CAMPESTRE)    
+
+(b) Esercizio obbligatorio in linguaggio SQL (5 punti):
+Visualizzare il nome di ciascuna persona che, nella regione Piemonte, ha organizzato almeno
+una corsa campestre per la categoria Under 14 ma nessuna corsa campestre per la categoria
+Under 20.
+
+    SELECT O.NomeO
+    FROM ORGANIZZATORE O
+    WHERE NOT EXIST (SELECT * FROM CORSA_CAMPESTRE CP WHERE CP.CodOrganizzatore = O.CodOrganizzatore AND Categoria="Under 20" AND Regione="Piemonte")  
+    AND EXIST (SELECT * FROM CORSA_CAMPESTRE CP WHERE CP.CodOrganizzatore = O.CodOrganizzatore AND Categoria="Under 14" AND Regione="Piemonte")  
+
+(c) Esercizio opzionale in linguaggio SQL (5 punti):
+Visualizzare il nome di ciascun concorrente che ha partecipato a tutte le corse campestri
+organizzate nella propria regione, ma non ha mai conseguito la prima posizione in nessuna
+corsa campestre.
+
+    FROM CONCORRENTE C JOIN CPCP JOIN CORSA_CAMPESTRE CP
+    WHERE CP.Regione = C.Regione AND
+    NOT EXIST (SELECT * FROM CPCP WHERE C.CodConcorrente=CPCP.CodConocrrente AND CPCP.Posizione=1)
+    GROUP BY C.CodConcorrente, C.Regione
+    HAVING COUNT(*) = (SELECT COUNT(*) FROM CP WHERE CP.Regione=C.Regione)
+
+=================================================================================================
+
+    Esame 2014-01-28 (Montesi)
+
+1)Scrivere in SQL una query che restituisce i nomi dei film con una media di
+valutazioni superiore a 7, per i film prodotti tra il 1990 e il 2000 (inclusi).
+
+    SELECT F.Titolo
+    FROM FILM F JOIN VOTO
+    WHERE F.Anno BETWEEN 1990 AND 2000
+    GROUP BY V.CodFilm, F.Titolo
+    HAVING AVG(V.Valutazione) > 7
+
+2. Scrivere in SQL una query che restituisce l’eta’ minima degli utenti che
+hanno dato a ’Blade Runner’ un voto maggiore di 8
+
+    SELECT MIN(U.Eta) AS ETA_MINIMA_RECENSORI
+    FROM UTENTE U NATURAL JOIN VOTO V NATURAL JOIN FILM F
+    WHERE F.Titolo="Blade Runner", V.Valutazione > 8 
+
+3. Scrivere in algebra relazionale una query che restituisce la valutazione dei
+film dal 2000 in poi per l’utente AntonioBianchi.
+
+    PRO[Valutazione, Titolo] (SEL[Anno>2000]FILM JOIN VOTO SEL[alias="AntonioBianchi"]UTENTE) 
+4. Scrivere in algebra relazionale una query che restituisce i dati degli utenti
+che hanno votato Django ma non hanno votato Pulp Fiction
+
+   UTENTE JOIN (PRO[CodUtente](VOTO JOIN SEL[Titolo="Django"]FILM) - PRO[CodUtente](SEL[Titolo="Pulp Fiction:] VOTO JOIN FILM))
+    
+
+Indicare se i seguenti schedule di due transazioni t1 e t2 possono produrre anomalie.
+
+1. r1(x), w2(x), c2, w1(x), c1
+
+    Lost Update
+
+2. r1(x), w1(x), r2(x), c2, a1
+
+    Dirty read: r2 legge un dato che modificato da t1 prima che questa abortisca    
+
+3. r1(x), r2(x), w2(x), r1(y), c1, c2
+
+    Nessuna anomalia
+4. r1(x), w1(x), r2(x), w2(x), c1, c2
+
+    Nessuna anomalia
+
+=============================================================================================================
+
+    2016-01-13 (Montesi)
+
+1. Scrivere in SQL una query che restituisce, per ogni serie tv, il nome della
+serie e la durata media degli episodi della prima stagione.
+
+    SELECT S.nome, AVG(E.durata) AS Durata_media
+    FROM SERIE S JOIN EPISODIO E ON E.idserie=S.id
+    WHERE E.stagione=1
+    GROUP BY S.id, S.nome
+
+2. Scrivere in SQL una query che restituisce i nomi delle prime 3 serie, create
+nel 2008, con il maggior numero di episodi totali.
+
+    SELECT S.titolo
+    FROM SERIE S JOIN EPISODIO E ON E.idSerie=S.id
+    WHERE S.anno=2008
+    GROUP BY S.id, S.titolo
+    ORDER BY episodio DESC
+    LIMIT 3
+
+3. Scrivere in algebra relazionale una query che restituisce il nome delle serie
+tv che non hanno nemmeno un sottotitolo in italiano.
+
+    PRO[nome](SERIE
+    JOIN[id=idSerie](
+    (RID[(idSerie, id)]PRO[id]SERIE) -
+    PRO[idserie](SEL[lingua="Italiano"]SOTTOTITOLO JOIN RID[(idepisodio, id)]EPISODIO)))
+
+4. Scrivere in algebra relazionale una query che restituisce numero e stagione
+degli episodi della serie The Walking Dead con durata superiore a 60
+minuti, per i quali esistono i relativi sottitoli in inglese
+
+    PRO[numero, stagione](
+    (RID[(idepisodio, id)]SEL[durata>=60]EPISODIO) JOIN SEL[lingua="inglese"]SOTTOTITOLO
+    JOIN RID[(idserie, id)]SEL[nome="The walking dead"]SERIE)
+
+=============================================================================
+
+    2016-02-05 (Montesi)
+
+    1) b, c, c, a, a, c
+
+
+
+1. Scrivere in SQL una query che restituisce tutti gli attributi dei concerti
+che contengono un movimento Largo.
+
+    SELECT S.nome, AVG(E.durata) AS Durata_media
+    FROM SERIE S JOIN EPISODIO E ON E.idserie=S.id
+    WHERE E.stagione=1
+    GROUP BY S.id, S.nome
+
+    FROM CONCERTI C NATURAL JOIN MOVIMENTI M
+    WHERE Tempo="Largo"
+
+2. Scrivere in SQL una query che restituisce tutti gli attributi dei movimenti
+dei concerti scritti dopo il 1720 che contengono più di tre movimenti.
+
+    SELECT M.*
+    FROM MOVIMENTI M JOIN CONCERTI C
+    WHERE C.Data > 1720
+    AND 3 <= (SELECT MAX(Numero) FROM Movimenti M1 WHERE M1.RV=C.RV)
+
+3. Selezionare in algebra relazionale tutti i movimenti dei concerti dove com-
+pare almeno un violino che durano più di due minuti.
+
+    PRO[RV, NUMERO, TEMPO, DURATA](SEL[Durata>120]MOVIMENTI JOIN SEL[Strumento="Violino"]STRUMENTAZIONE)
+
+4. Selezionare in algebra relazionale i concerti dove tra gli strumenti compare
+il Cembalo che hanno solo tre movimenti (esistono quindi i movimenti 1,
+2 e 3 soltanto)
+
+
+    CONCERTI JOIN
+    ((PRO[RV]SEL[Numero=3]MOVIMENTI - PRO[RV](SEL[Numero>3]MOVIMENTI))
+
+    JOIN
+
+    (PRO[RV](SEL[Strumento="Cembalo"] JOIN CONCERTI)))
+
+
+
+Se non si presentano problemi, presentare un’al-tra possibile schedulazione dove si possono presentare anomalie e fornire una
+soluzione tramite i lock.
+
+1. write1(x), read2(x), write2(y), abort1(), commit2()
+
+    Dirty read
+    X1(x), W1(x), S2(X),abort1(), R2(x) X2(y), W(y), commit2()
+
+2. read1(x), read2(x), write2(x), read1(y), commit1(), commit2()
+2. read2(x), read1(x), write2(x), read1(y), commit1(), commit2()
+
+
+=================================================================
+
+    Esercizio 18 Bertini
+
+Museum (-Name, City)
+Artist (-Name, Nationality)
+Work (-Code, Title, NameM, NameA)
+Character (-Name, -CodeW)
+
+1)Scrivere una query che ritorni i nomi dei musei di Londra che non hanno un lavoro di Tiziano
+
+    SELECT M.Name
+    FROM MUSEUM M
+    WHERE NOT EXIST(SELECT *
+                    FROM WORK W
+                    WHERE W.NameM=M.Name AND W.NameA="Tiziano")
+    AND M.City="London"
+
+2) Scrivere una query che ritorni tutti i musei a londra con solo lavori di Tiziano
+
+    SELECT M.Name
+    FROM MUSEUM M
+    WHERE NOT EXIST(SELECT *
+                    FROM WORK W
+                    WHERE W.NameM=M.Name AND W.NameA!="Tiziano")
+    AND M.City="London"
+
+3) Ritornare i nomi dei musei che hanno almeno 20 lavori di artisti Italiani
+
+    SELECT W.NameM
+    FROM WORK W JOIN ARTIST A ON A.Name=W.NameA
+    WHERE A.Nationality="Italian"
+    GROUP BY NameM
+    HAVING COUNT(*) > 20
+
+
+======================================================
+
+
+    Simulazione esame Bertini
+
+    1) a, d, c, b, c, a
+
+
+
+MODELLO(-idModello, idMarca, nome, categoria)
+VALUTAZIONE(-idModello, -anno, prezzo)
+MARCA(-idMarca, marchio, nazionalita)
+
+1. Scrivere in SQL una query che restituisca la media delle valutazioni per
+ogni modello di auto italiana, indicando anche la marca.
+
+    SELECT idModello, marchio, AVG(V.prezzo) AS MEDIA_VALUTAZIONI
+    FROM VALUTAZIONE V NATURAL JOIN MODELLO M JOIN MODELLO
+    WHERE M.Nazionalita="Italiana"
+    GROUP BY idModello, idMarca, marchio
+
+2. Scrivere in SQL una query che restituisca, per ogni anno dal 2000 al 2010,
+il conteggio delle berline tedesche con valutazione maggiore di 30000.
+
+    SELECT COUNT(*) AS NUMBER
+    FROM VALUTAZIONE V NATURAL JOIN MODELLO M JOIN MARCA M
+    WHERE M.nazionalita="Tedesca" AND M.categoria="Berlina" AND V.Anno BETWEEN 2000 AND 2010
+    AND V.prezzo > 30000
+    GROUP BY V.anno
+
+3. Scrivere in algebra relazionale un’espressione algebrica che restituisca le valutazioni delle berline prodotte dalle case francesi che non hanno valutazione per l’anno 2007.
+
+    Valutazione JOIN (
+    PRO[idModello]MODELLO -
+    (PRO[idModello](SEL[anno=2007]VALUTAZIONE JOIN SEL[categoria="berlina"]MODELLO JOIN SEL[Nazionalita="Francia"]MARCA)))
+
+4. Scrivere in algebra relazionale un’espressione algebrica che restituisca le
+valutazioni superiori ai 15000, dall’anno 2005 al 2009, delle utilitarie non
+italiane. 
+
+    PRO[IdModello, anno, prezzo](SEL[prezzo>15000 AND anno>2005, anno<2009]VALUTAZIONE JOIN MODELLO JOIN SEL[Nazionalita!="Italiana"]MARCA)
+
+==================================================================
+
+    Esercizio 12 Bertini
+
+    STUDENT (-id, Name, Surname, School)
+    EXAM (-Student, -Subject, Mark, Date)
+    
+    Ritorna tutti gli studenti con almeno 30 in un esame e la prima data dove hanno preso 30.
+
+    30 := SEL[Mark=30]EXAM
+
+    PRO[Student,  Date]EXAM - 
+    PRO[Student,  Date](SEL[DATE > DATE1]30 JOIN RID[(Subject1, Subject), (Mark1, Mark), (Date1, Date)]30)
+    
+
+
+
+    Esercizio 19 Bertini
+
+    SAILOR (-id, name, level, BirthD)
+    BOOKING (-Sailor, -Boat, -Date)
+    BOAT (-Id, Name, Colour)
+
+1) Scrivere una query che ritorni tutti i sailor che hanno noleggiato una barca verde ed una rossa
+
+     PRO[SAILOR]BOOKING JOIN SEL[Colour="RED"]RID[(Id, Boat)]BOAT JOIN INTERSECT
+     PRO[SAILOR]BOOKING JOIN SEL[Colour="GREEN"]RID[(Id, Boat)]BOAT
