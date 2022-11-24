@@ -1,0 +1,8 @@
+SELECT DISTINCT L.Surname
+FROM LECTURER AS L
+JOIN EDITION AS ED
+ON L.Surname = ED.Lecturer
+JOIN EXAM AS EX
+ON ED.Course = EX.Course AND ED.Year = EX.Year
+GROUP BY L.Id, L.Surname, ED.Course
+HAVING COUNT(*) >= 10
