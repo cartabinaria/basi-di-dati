@@ -74,8 +74,21 @@ Valutazione)
 
 ## Esercizio 3
 
-![Diagramma ER che risolve l'esercizio 3](scritto-2021-12-14-soluzione-es3.png)
+![Diagramma ER che risolve l'esercizio 3](scritto-2021-12-14-soluzione-es3.jpeg)
+
+Vincoli non esprimibili:
+
+- per ciascuna bolletta, la somma dei rimborsi ad essa associati deve essere
+  strettamente minore del costo totale della bolletta stessa.
 
 ## Esercizio 4
 
-![Diagramma ER che risolve l'esercizio 3](scritto-2021-12-14-soluzione-es4.png)
+![Diagramma ER che risolve l'esercizio 3](scritto-2021-12-14-soluzione-es4.jpeg)
+
+- cerco la chiave 8 e scopro che è effettivamente presente nella foglia
+  centrale (in altro a sinistra);
+- rimuovo dalla foglia centrale la chiave 8 (in alto a destra);
+- siccome la foglia di sinistra ha una chiave in eccesso, può regalare quella
+  massima alla foglia che ne ha appena perso una (in basso a destra);
+- siccome la chiave minima della foglia centrale è cambiata, anche la chiave
+  analoga del suo genitore viene aggiornata (in basso a sinistra).
