@@ -47,30 +47,24 @@ GROUP BY Valutazione.anno
 
 ### Parte 3
 
-```math
-\pi_{idModello, nome}(\sigma_{categoria = "Berlina" \wedge nazionalità =
-"Francia"}(Modello \bowtie MARCA)
+$$ \pi_{idModello, nome}(\sigma_{categoria = "Berlina" \wedge nazionalità =
+"Francia"}(Modello \bowtie MARCA) $$
 
--
+$$ - $$
 
-(\pi_{idModello}(\sigma_{anno = 2007}(Modello \bowtie Valutazione)) \bowtie
-Valutazione)
-```
+$$ (\pi_{idModello}(\sigma_{anno = 2007}(Modello \bowtie Valutazione)) \bowtie Valutazione) $$
 
 ### Parte 4
 
-```math
-\sigma_{prezzo > 15000 \wedge anno >= 2005 \wedge anno <= 2009}(Valutazione)
+$$ \sigma_{prezzo > 15000 \wedge anno >= 2005 \wedge anno <= 2009}(Valutazione) $$
 
-\bowtie
+$$ \bowtie $$
 
-(Marca - \sigma_{nazionalità = "Italia"}(Marca))
+$$ (Marca - \sigma_{nazionalità = "Italia"}(Marca)) $$
 
-\bowtie
+$$ \bowtie $$
 
-\sigma_{categoria = "Utilitaria"}(Modello)
-
-```
+$$ \sigma_{categoria = "Utilitaria"}(Modello) $$
 
 ## Esercizio 3
 
