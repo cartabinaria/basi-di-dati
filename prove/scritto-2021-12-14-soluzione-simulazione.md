@@ -77,7 +77,7 @@ Vincoli non esprimibili:
 
 ## Esercizio 4
 
-![Diagramma ER che risolve l'esercizio 3](scritto-2021-12-14-soluzione-es4.jpeg)
+![Sequenza degli stati dell'albero B+ che risolve l'esercizio 4](scritto-2021-12-14-soluzione-es4.jpeg)
 
 - cerco la chiave 8 e scopro che è effettivamente presente nella foglia
   centrale (in altro a sinistra);
