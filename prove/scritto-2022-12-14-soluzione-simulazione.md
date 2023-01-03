@@ -47,28 +47,30 @@ GROUP BY Valutazione.anno
 
 ### Parte 3
 
-$$ \pi_{idModello, nome}(\sigma_{categoria = "Berlina" \wedge nazionalità =
-"Francia"}(Modello \bowtie MARCA) $$
+$$
+\pi_{idModello, nome}(\sigma_{categoria = "Berlina" \wedge nazionalità =
+"Francia"}(Modello \bowtie MARCA)
+$$
 
 $$ - $$
 
-$$ (\pi_{idModello}(\sigma_{anno = 2007}(Modello \bowtie Valutazione)) \bowtie Valutazione) $$
+$$ (\pi*{idModello}(\sigma*{anno = 2007}(Modello \bowtie Valutazione)) \bowtie Valutazione) $$
 
 ### Parte 4
 
-$$ \sigma_{prezzo > 15000 \wedge anno >= 2005 \wedge anno <= 2009}(Valutazione) $$
+$$ \sigma\_{prezzo > 15000 \wedge anno >= 2005 \wedge anno <= 2009}(Valutazione) $$
 
 $$ \bowtie $$
 
-$$ (Marca - \sigma_{nazionalità = "Italia"}(Marca)) $$
+$$ (Marca - \sigma\_{nazionalità = "Italia"}(Marca)) $$
 
 $$ \bowtie $$
 
-$$ \sigma_{categoria = "Utilitaria"}(Modello) $$
+$$ \sigma\_{categoria = "Utilitaria"}(Modello) $$
 
 ## Esercizio 3
 
-![Diagramma ER che risolve l'esercizio 3](scritto-2021-12-14-soluzione-es3.jpeg)
+![Diagramma ER che risolve l'esercizio 3](scritto-2022-12-14-soluzione-es3.jpeg)
 
 Vincoli non esprimibili:
 
@@ -77,7 +79,7 @@ Vincoli non esprimibili:
 
 ## Esercizio 4
 
-![Diagramma ER che risolve l'esercizio 3](scritto-2021-12-14-soluzione-es4.jpeg)
+![Diagramma ER che risolve l'esercizio 3](scritto-2022-12-14-soluzione-es4.jpeg)
 
 - cerco la chiave 8 e scopro che è effettivamente presente nella foglia
   centrale (in altro a sinistra);
