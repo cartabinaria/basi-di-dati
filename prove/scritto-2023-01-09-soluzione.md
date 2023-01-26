@@ -22,20 +22,20 @@ $$ \sigma\_{Partecipazione.piazzamento \leq 3}(Partecipazione) $$
 $$ \bowtie\_{Gara.codice = Partecipazione.gara} $$
 
 $$
-\sigma_{Gara.data \geq 1-01-2005 \and Gara.data \leq 31-12-2010 \and
+\sigma_{Gara.data \geq 1-01-2005 \land Gara.data \leq 31-12-2010 \land
 Gara.disciplina = 'slalom speciale'}(Gara)
 $$
 
 ## Interrogazione 2
 
-$$ \pi*{Gara.luogo}(Gara - (\pi*{Gara.\*}( $$
+$$ \pi_{Gara.luogo}(Gara - (\pi_{Gara.\*}( $$
 
 $$
-\sigma_{Gara.luogo = Atleta.nazione \and Partecipazione.piazzamentento = 1}(
+\sigma_{Gara.luogo = Atleta.nazione \land Partecipazione.piazzamentento = 1}(
 $$
 
-Gara \bowtie*{Gara.codice = Partecipazione.gara} Partecipazione
-\bowtie*{Partecipazione.atleta = Atleta.codice} Atleta $$
+Gara \bowtie_{Gara.codice = Partecipazione.gara} Partecipazione
+\bowtie_{Partecipazione.atleta = Atleta.codice} Atleta $$
 
 $$ ) $$
 
