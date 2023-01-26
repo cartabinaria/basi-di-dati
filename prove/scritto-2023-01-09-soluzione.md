@@ -34,7 +34,7 @@ $$
 \sigma_{Gara.luogo = Atleta.nazione \land Partecipazione.piazzamentento = 1}(
 $$
 
-Gara \bowtie_{Gara.codice = Partecipazione.gara} Partecipazione
+$$ Gara \bowtie_{Gara.codice = Partecipazione.gara} Partecipazione
 \bowtie_{Partecipazione.atleta = Atleta.codice} Atleta $$
 
 $$ ) $$
