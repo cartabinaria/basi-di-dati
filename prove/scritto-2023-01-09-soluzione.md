@@ -158,6 +158,7 @@ HAVING COUNT(V.codice) >= 5
 - Il peso deve essere un valore decimale
 - Per ogni giornata di donazione deve essere assegnato almeno un medico
 - Per ogni giornata di donazione devono essere assegnati almeno tre infermieri
+- Solo a presenze nello stato "presente" possono essere associate donazioni
 
 ## Esercizio 4
 
