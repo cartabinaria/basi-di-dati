@@ -76,7 +76,7 @@ Soluzione c
 
 ## Esercizio 2
 
-## Interrogazione 1
+### Interrogazione 1
 
 $$ \pi\_{Atleta.nome}( $$
 
@@ -95,7 +95,7 @@ $$
 
 $$ ) $$
 
-## Interrogazione 2
+### Interrogazione 2
 
 $$ \pi_{Gara.luogo}(Gara - (\pi_{Gara.\ast}( $$
 
@@ -112,7 +112,7 @@ $$ ) $$
 
 $$ ))) $$
 
-## Interrogazine 3
+### Interrogazine 3
 
 ```sql
 SELECT DISTINCT Atleta.nome, Atleta.data
@@ -125,7 +125,7 @@ WHERE Atleta.codice NOT IN(
 )
 ```
 
-## Interrogazione 4
+### Interrogazione 4
 
 ```sql
 -- Crea una vista per selezionare gli atleti nati dopo il 1996 e che abbiano partecipato ad almeno 10 gare di sci di fondo
@@ -143,3 +143,21 @@ FROM V
 GROUP BY V.nazione
 HAVING COUNT(V.codice) >= 5
 ```
+
+## Esercizio 3
+
+
+
+## Esercizio 4
+
+### 4.1
+
+C'è un conflitto tra $w_1(A)$ e $w_2(A)$. Si tratta di un conflitto Lost Update (Write-Write) e per risolverlo occorre adottare il meccanismo delle Repeatable Reads.
+
+### 4.2
+
+Sono presenti 3 conflitti: tra $w_4(C)$ e $r_3(C)$ (Dirty Read), tra $w_4(C)$ e $w_3(C)$ (Lost Update) e tra $r_4(C)$ e $w_3(C)$ (Lost Update). Per risolverli con il livello di isolamento minimo occorre adottare il meccanismo delle Repeatable Reads.
+
+### 4.3
+
+C'è un conflitto tra $r_2(A)$ e $w_1(A)$. Si tratta di un conflitto Unrepeatable Read (Read-Write) e per risolverlo occorre adottare il meccanismo delle Repeatable Reads.
