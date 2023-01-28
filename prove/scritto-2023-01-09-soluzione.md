@@ -146,7 +146,18 @@ HAVING COUNT(V.codice) >= 5
 
 ## Esercizio 3
 
-
+![image](https://user-images.githubusercontent.com/58698974/215279145-6ca445d7-8860-49a2-a8c5-96773f4fe29a.png)
+- Lo stato può essere:
+  - assente giustificato
+  - assente ingiustificato
+  - presente
+- Il gruppo sanguigno può essere: A+, A-, B+, B-, AB+, AB-, 0+, 0-
+- I valori di pressione massima e minima devono essere entrambi interi positivi
+- L'emoglobina deve avere un valore compreso tra 10.0 e 20.0
+- La quantità di sangue deve essere un valore intero positivo corrispondente al numero di cc donati
+- Il peso deve essere un valore decimale
+- Per ogni giornata di donazione deve essere assegnato almeno un medico
+- Per ogni giornata di donazione devono essere assegnati almeno tre infermieri
 
 ## Esercizio 4
 
