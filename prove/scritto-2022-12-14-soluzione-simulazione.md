@@ -48,13 +48,13 @@ GROUP BY Valutazione.anno
 ### Parte 3
 
 $$
-\pi_{idModello, nome}(\sigma_{categoria = "Berlina" \wedge nazionalità =
-"Francia"}(Modello \bowtie MARCA)
+(\pi_{idModello}(\sigma_{categoria = "Berlina" \wedge nazionalità =
+"Francia"}(Modello \bowtie MARCA))
 $$
 
 $$ - $$
 
-$$ (\pi*{idModello}(\sigma*{anno = 2007}(Modello \bowtie Valutazione)) \bowtie Valutazione) $$
+$$ \pi_{idModello}(\sigma_{anno = 2007}(Modello \bowtie Valutazione))) \bowtie Valutazione $$
 
 ### Parte 4
 
